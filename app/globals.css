@@ -123,3 +123,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 已故人物献花：自下而上飘过（cqh 相对头像容器高度，避免 translateY(%) 只相对 emoji 自身过短） */
+.memorial-offering-root {
+  container-type: size;
+}
+
+@keyframes memorial-offering-float {
+  0% {
+    transform: translateX(-50%) translateX(0) translateY(8cqh) rotate(-8deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateX(var(--memorial-drift, 0px)) translateY(calc(-145cqh)) rotate(14deg);
+    opacity: 0;
+  }
+}
+
+.memorial-offering-particle {
+  animation: memorial-offering-float 2.85s ease-out forwards;
+  will-change: transform, opacity;
+}

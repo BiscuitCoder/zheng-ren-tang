@@ -16,6 +16,8 @@ export const personagesConfig: PersonageConfig[] = [
     description: '苹果创始人，产品与设计哲学家',
     avatar: '/avatars/steve-jobs.png',
     tags: ['产品', '设计', '科技', '美国'],
+    born: '1955-02',
+    died: '2011-10',
   },
   {
     slug: 'trump',
@@ -32,5 +34,7 @@ export const personagesConfig: PersonageConfig[] = [
     description: '升学与考研规划导师，职业规划与阶层流动观察者',
     avatar: '/avatars/zhangxuefeng.png',
     tags: ['教育', '考研', '职业规划', '中国'],
+    born: '1984-05-18',
+    died: '2026-03-24',
   },
 ]

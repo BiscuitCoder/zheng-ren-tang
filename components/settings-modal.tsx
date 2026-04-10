@@ -57,7 +57,8 @@ export function SettingsModal() {
               onChange={(e) => setDraft({ ...draft, apiKey: e.target.value })}
             />
             <p className="text-xs text-muted-foreground">
-              API Key 仅保存在你的浏览器本地，不会上传至任何服务器。
+              若填写：仅保存在本机浏览器。也可留空，改用项目根目录 .env / .env.local 中的
+              OPENAI_API_KEY（由服务端使用，不会写入 localStorage）。
             </p>
           </div>
           <div className="space-y-1">

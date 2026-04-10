@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsModal } from '@/components/settings-modal'
 import { ChatWindow } from '@/components/chat-window'
+import { MemorialPersonageAvatar } from '@/components/memorial-personage-avatar'
 import { personagesConfig } from '@/personages.config'
 
 export default async function ChatPage({
@@ -23,7 +24,17 @@ export default async function ChatPage({
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <span className="font-semibold flex-1 truncate">{persona.name}</span>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <MemorialPersonageAvatar
+            src={persona.avatar}
+            alt={persona.name}
+            born={persona.born}
+            died={persona.died}
+            className="h-9 w-9 shrink-0 rounded-full"
+            sizes="36px"
+          />
+          <span className="font-semibold truncate">{persona.name}</span>
+        </div>
         <Button variant="outline" size="sm" asChild>
           <Link href="/roundtable">圆桌</Link>
         </Button>

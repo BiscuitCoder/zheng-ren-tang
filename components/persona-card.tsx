@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { MemorialPersonageAvatar } from '@/components/memorial-personage-avatar'
 import type { PersonageConfig } from '@/types'
 
 interface PersonaCardProps {
@@ -14,12 +14,14 @@ export function PersonaCard({ persona }: PersonaCardProps) {
       <Card className="group cursor-pointer hover:shadow-md transition-shadow h-full">
         <CardContent className="p-4 flex flex-col gap-3">
           <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
-            <Image
+            <MemorialPersonageAvatar
               src={persona.avatar}
               alt={persona.name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={() => {}}
+              born={persona.born}
+              died={persona.died}
+              className="h-full w-full rounded-lg"
+              imageClassName="group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             />
           </div>
           <div>

@@ -5,10 +5,11 @@ import type { ApiSettings } from '@/types'
 
 const STORAGE_KEY = 'zhenrentang-settings'
 
+/** 留空表示不在浏览器里覆盖，由服务端 OPENAI_* 或下方占位决定 */
 const DEFAULT_SETTINGS: ApiSettings = {
   apiKey: '',
-  baseURL: 'https://api.openai.com/v1',
-  model: 'gpt-4o',
+  baseURL: '',
+  model: '',
 }
 
 export function useSettings() {

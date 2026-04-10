@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
+import { MemorialPersonageAvatar } from '@/components/memorial-personage-avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings } from '@/hooks/use-settings'
+import { MarkdownMessage } from '@/components/markdown-message'
 import { consumeSSEStream } from '@/lib/read-sse'
 import { personagesConfig } from '@/personages.config'
 import type { PersonageConfig, RoundtableEntry } from '@/types'
@@ -145,11 +146,13 @@ export function RoundtableView() {
                   }`}
                 >
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted mb-2">
-                    <Image
+                    <MemorialPersonageAvatar
                       src={p.avatar}
                       alt={p.name}
-                      fill
-                      className="object-cover"
+                      born={p.born}
+                      died={p.died}
+                      className="h-full w-full rounded-full"
+                      imageClassName="object-cover"
                       sizes="40px"
                     />
                   </div>
@@ -209,14 +212,20 @@ export function RoundtableView() {
                   {entry.speaker}
                 </div>
                 <div
-                  className={`rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap max-w-[min(100%,42rem)] ${
+                  className={`rounded-2xl px-4 py-3 max-w-[min(100%,42rem)] ${
                     isUser
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                      : 'bg-muted text-foreground'
                   }`}
                 >
-                  {entry.content ||
-                    (streaming && i === history.length - 1 ? '▍' : '')}
+                  {entry.content ? (
+                    <MarkdownMessage
+                      content={entry.content}
+                      variant={isUser ? 'user' : 'assistant'}
+                    />
+                  ) : streaming && i === history.length - 1 ? (
+                    <span className="text-sm">▍</span>
+                  ) : null}
                 </div>
               </div>
             )

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings } from '@/hooks/use-settings'
+import { MarkdownMessage } from '@/components/markdown-message'
 import { consumeSSEStream } from '@/lib/read-sse'
 import type { Message } from '@/types'
 
@@ -97,16 +98,20 @@ export function ChatWindow({ slug, personaName }: ChatWindowProps) {
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${
+                className={`max-w-[85%] rounded-2xl px-4 py-2 ${
                   msg.role === 'user'
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                    : 'bg-muted text-foreground'
                 }`}
               >
-                {msg.content ||
-                  (streaming && i === messages.length - 1 && msg.role === 'assistant'
-                    ? '▍'
-                    : '')}
+                {msg.content ? (
+                  <MarkdownMessage
+                    content={msg.content}
+                    variant={msg.role === 'user' ? 'user' : 'assistant'}
+                  />
+                ) : streaming && i === messages.length - 1 && msg.role === 'assistant' ? (
+                  <span className="text-sm">▍</span>
+                ) : null}
               </div>
             </div>
           ))}
