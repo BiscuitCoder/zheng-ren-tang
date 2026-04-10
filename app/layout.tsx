@@ -1,10 +1,15 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Noto_Serif_SC } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+/** 全站宋体风格：思源宋体 + 系统宋体回退，偏纸面阅读 */
+const notoSerif = Noto_Serif_SC({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans-impl',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: '蒸人堂 — AI 名人人格对话',
@@ -18,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="font-sans antialiased">
+      <body className={`${notoSerif.variable} font-sans antialiased`}>
         {children}
         <Analytics />
       </body>

@@ -4,8 +4,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 export function PersonaCardSkeleton() {
   return (
     <Card className="h-full">
-      <CardContent className="p-4 flex flex-col gap-3">
-        <Skeleton className="w-full aspect-square rounded-lg" />
+      <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
+        <Skeleton className="aspect-square w-full rounded-lg" />
         <div className="space-y-2">
           <Skeleton className="h-5 w-3/4" />
           <Skeleton className="h-4 w-full" />

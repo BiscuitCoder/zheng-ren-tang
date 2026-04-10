@@ -103,17 +103,17 @@ export function ComponentsShowcase() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <Label htmlFor="name">姓名</Label>
                     <Input id="name" placeholder="请输入姓名" />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <Label htmlFor="email">邮箱</Label>
                     <Input id="email" type="email" placeholder="请输入邮箱" />
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Label htmlFor="search">搜索</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +121,7 @@ export function ComponentsShowcase() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Label>选择框</Label>
                   <Select>
                     <SelectTrigger>
@@ -135,7 +135,7 @@ export function ComponentsShowcase() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Label htmlFor="bio">简介</Label>
                   <Textarea id="bio" placeholder="请输入您的简介..." />
                 </div>

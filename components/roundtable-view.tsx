@@ -130,9 +130,11 @@ export function RoundtableView() {
 
   if (!started) {
     return (
-      <div className="container mx-auto px-4 py-10 max-w-2xl space-y-8">
-        <div className="space-y-2">
-          <h2 className="font-semibold">选择参与讨论的人物（至少 2 位）</h2>
+      <div className="container mx-auto max-w-2xl space-y-8 px-4 py-10 sm:px-6">
+        <div className="space-y-3">
+          <h2 className="text-[1.25rem] font-semibold leading-[1.2] tracking-normal">
+            选择参与讨论的人物（至少 2 位）
+          </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {personagesConfig.map((p) => {
               const active = !!selected.find((x) => x.slug === p.slug)
@@ -141,8 +143,10 @@ export function RoundtableView() {
                   key={p.slug}
                   type="button"
                   onClick={() => togglePersona(p)}
-                  className={`border rounded-lg p-3 text-left transition-colors ${
-                    active ? 'border-primary bg-primary/10' : 'hover:bg-accent'
+                  className={`rounded-lg border p-3 text-left transition-colors ${
+                    active
+                      ? 'border-primary bg-primary/12 shadow-[0_0_0_1px_rgba(201,100,66,0.35)]'
+                      : 'border-border bg-card hover:bg-accent'
                   }`}
                 >
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted mb-2">
@@ -163,8 +167,10 @@ export function RoundtableView() {
             })}
           </div>
         </div>
-        <div className="space-y-2">
-          <h2 className="font-semibold">讨论话题</h2>
+        <div className="space-y-3">
+          <h2 className="text-[1.25rem] font-semibold leading-[1.2] tracking-normal">
+            讨论话题
+          </h2>
           <Input
             placeholder="例如：创业公司该不该先追求盈利"
             value={topic}
@@ -187,7 +193,7 @@ export function RoundtableView() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="border-b px-4 py-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground shrink-0">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/80 px-4 py-2.5 text-[0.94rem] text-muted-foreground backdrop-blur-sm">
         <span className="truncate max-w-[min(100%,28rem)]">话题：{topic}</span>
         <span aria-hidden>·</span>
         <span>第 {round} 轮</span>
@@ -204,7 +210,7 @@ export function RoundtableView() {
             return (
               <div
                 key={`${entry.speaker}-${i}`}
-                className={`space-y-1 ${isUser ? 'flex flex-col items-end' : ''}`}
+                className={`space-y-1.5 ${isUser ? 'flex flex-col items-end' : ''}`}
               >
                 <div
                   className={`text-xs font-medium ${isUser ? 'text-primary' : 'text-muted-foreground'}`}
@@ -212,10 +218,10 @@ export function RoundtableView() {
                   {entry.speaker}
                 </div>
                 <div
-                  className={`rounded-2xl px-4 py-3 max-w-[min(100%,42rem)] ${
+                  className={`max-w-[min(100%,42rem)] rounded-lg px-4 py-3 ${
                     isUser
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-[0_0_0_1px_rgba(201,100,66,0.35)]'
+                      : 'border border-border bg-card text-foreground shadow-[var(--shadow-whisper)]'
                   }`}
                 >
                   {entry.content ? (
@@ -233,7 +239,7 @@ export function RoundtableView() {
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
-      <div className="border-t p-4 space-y-3 shrink-0 max-w-3xl w-full mx-auto">
+      <div className="mx-auto w-full max-w-3xl shrink-0 space-y-3 border-t border-border bg-background/95 p-4 backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row gap-2">
           <Textarea
             placeholder="一轮结束后，可补充你的观点（可选）"

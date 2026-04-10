@@ -46,8 +46,8 @@ export function SettingsModal() {
         <DialogHeader>
           <DialogTitle>API 配置</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-1">
+        <div className="space-y-5 py-2">
+          <div className="space-y-2">
             <Label htmlFor="apiKey">API Key</Label>
             <Input
               id="apiKey"
@@ -61,7 +61,7 @@ export function SettingsModal() {
               OPENAI_API_KEY（由服务端使用，不会写入 localStorage）。
             </p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="baseURL">Base URL</Label>
             <Input
               id="baseURL"
@@ -75,14 +75,14 @@ export function SettingsModal() {
                   key={p.label}
                   type="button"
                   onClick={() => setDraft({ ...draft, baseURL: p.baseURL })}
-                  className="text-xs px-2 py-0.5 rounded border hover:bg-accent transition-colors"
+                  className="rounded-md border border-border bg-card px-2.5 py-1 text-[0.75rem] tracking-wide transition-colors hover:bg-accent"
                 >
                   {p.label}
                 </button>
               ))}
             </div>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="model">Model</Label>
             <Input
               id="model"

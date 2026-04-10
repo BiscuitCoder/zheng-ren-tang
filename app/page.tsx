@@ -29,9 +29,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b sticky top-0 z-10 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="font-bold text-lg shrink-0">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+        <div className="container mx-auto max-w-[1200px] px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="shrink-0 text-xl font-semibold tracking-normal text-foreground"
+          >
             蒸人堂
           </Link>
           <div className="flex items-center gap-2">
@@ -43,17 +46,19 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="mb-8 max-w-2xl">
-          <h2 className="text-2xl font-semibold tracking-tight">人物大厅</h2>
-          <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
+      <main className="container mx-auto max-w-[1200px] px-4 sm:px-6 py-10 sm:py-14 flex-1">
+        <div className="mb-10 max-w-2xl space-y-3">
+          <h2 className="text-[1.6rem] font-semibold leading-[1.2] tracking-normal">
+            人物大厅
+          </h2>
+          <p className="text-muted-foreground text-[1.06rem] leading-[1.6]">
             浏览已蒸馏的人格，点选卡片进入单人对话；或使用圆桌让多位名人就同一话题各抒己见。
           </p>
         </div>
 
         {error && (
           <div
-            className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive mb-6"
+            className="rounded-lg border border-destructive/35 bg-destructive/8 px-4 py-3 text-[0.94rem] leading-[1.72] text-destructive mb-6"
             role="alert"
           >
             无法加载人物列表：{error}。请刷新页面重试。
@@ -74,7 +79,7 @@ export default function Home() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
               {loading
                 ? Array.from({ length: SKELETON_COUNT }).map((_, i) => (
                     <PersonaCardSkeleton key={i} />
@@ -83,7 +88,7 @@ export default function Home() {
             </div>
 
             {!loading && filtered.length === 0 && (
-              <p className="text-center text-muted-foreground py-20">
+              <p className="text-center text-muted-foreground text-[0.94rem] leading-[1.6] py-20">
                 没有匹配的人物，换个标签试试
               </p>
             )}

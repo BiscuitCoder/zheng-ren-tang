@@ -3,80 +3,94 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Claude-inspired warm palette — see docs/design.md */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Surfaces */
+  --background: #f5f4ed;
+  --foreground: #141413;
+  --card: #faf9f5;
+  --card-foreground: #141413;
+  --popover: #faf9f5;
+  --popover-foreground: #141413;
+  /* Brand CTA — Terracotta */
+  --primary: #c96442;
+  --primary-foreground: #faf9f5;
+  /* Warm Sand secondary */
+  --secondary: #e8e6dc;
+  --secondary-foreground: #4d4c48;
+  --muted: #ebe8df;
+  --muted-foreground: #5e5d59;
+  --accent: #f0eee6;
+  --accent-foreground: #141413;
+  --destructive: #b53333;
+  --destructive-foreground: #faf9f5;
+  --border: #f0eee6;
+  --input: #e8e6dc;
+  /* Focus Blue — only cool color, a11y */
+  --ring: #3898ec;
+  --chart-1: #c96442;
+  --chart-2: #5e5d59;
+  --chart-3: #87867f;
+  --chart-4: #d97757;
+  --chart-5: #30302e;
+  /* 略收紧全局圆角基准（卡片/按钮等多用 rounded-lg/md） */
+  --radius: 0.5rem;
+  --sidebar: #faf9f5;
+  --sidebar-foreground: #141413;
+  --sidebar-primary: #c96442;
+  --sidebar-primary-foreground: #faf9f5;
+  --sidebar-accent: #f0eee6;
+  --sidebar-accent-foreground: #141413;
+  --sidebar-border: #f0eee6;
+  --sidebar-ring: #3898ec;
+  /* Ring shadow tokens (warm) */
+  --shadow-ring-warm: 0 0 0 1px #d1cfc5;
+  --shadow-whisper: 0 4px 24px rgba(0, 0, 0, 0.05);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: #141413;
+  --foreground: #faf9f5;
+  --card: #30302e;
+  --card-foreground: #faf9f5;
+  --popover: #30302e;
+  --popover-foreground: #faf9f5;
+  --primary: #c96442;
+  --primary-foreground: #faf9f5;
+  --secondary: #3d3d3a;
+  --secondary-foreground: #b0aea5;
+  --muted: #30302e;
+  --muted-foreground: #b0aea5;
+  --accent: #30302e;
+  --accent-foreground: #faf9f5;
+  --destructive: #b53333;
+  --destructive-foreground: #faf9f5;
+  --border: #30302e;
+  --input: #30302e;
+  --ring: #3898ec;
+  --chart-1: #c96442;
+  --chart-2: #b0aea5;
+  --chart-3: #87867f;
+  --chart-4: #d97757;
+  --chart-5: #5e5d59;
+  --sidebar: #141413;
+  --sidebar-foreground: #faf9f5;
+  --sidebar-primary: #c96442;
+  --sidebar-primary-foreground: #faf9f5;
+  --sidebar-accent: #30302e;
+  --sidebar-accent-foreground: #faf9f5;
+  --sidebar-border: #30302e;
+  --sidebar-ring: #3898ec;
+  --shadow-ring-warm: 0 0 0 1px #4d4c48;
+  --shadow-whisper: 0 4px 24px rgba(0, 0, 0, 0.25);
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  /* 主字体：宋体系（Web 用 Noto Serif SC，系统用华文/新宋体等） */
+  --font-sans: var(--font-sans-impl), 'Songti SC', 'STSong', 'SimSun', 'NSimSun', 'Noto Serif SC',
+    serif;
+  --font-serif: var(--font-sans);
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -120,7 +134,16 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-size: 1rem;
+    line-height: 1.72;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-sans font-semibold tracking-normal text-foreground;
+    font-weight: 600;
   }
 }
 

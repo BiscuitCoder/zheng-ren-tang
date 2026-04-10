@@ -7,13 +7,13 @@ import { RoundtableView } from '@/components/roundtable-view'
 export default function RoundtablePage() {
   return (
     <div className="flex flex-col h-dvh min-h-0">
-      <header className="border-b flex items-center px-4 h-14 gap-3 shrink-0">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 h-14">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <span className="font-semibold flex-1">圆桌讨论</span>
+        <span className="flex-1 text-base font-semibold tracking-normal">圆桌讨论</span>
         <Button variant="outline" size="sm" asChild>
           <Link href="/">大厅</Link>
         </Button>

@@ -98,10 +98,10 @@ export function ChatWindow({ slug, personaName }: ChatWindowProps) {
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2 ${
+                className={`max-w-[85%] rounded-lg px-4 py-2.5 ${
                   msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-[0_0_0_1px_rgba(201,100,66,0.35)]'
+                    : 'border border-border bg-card text-foreground shadow-[var(--shadow-whisper)]'
                 }`}
               >
                 {msg.content ? (
@@ -118,7 +118,7 @@ export function ChatWindow({ slug, personaName }: ChatWindowProps) {
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
-      <div className="border-t p-4 flex gap-2 shrink-0 max-w-3xl w-full mx-auto">
+      <div className="mx-auto flex w-full max-w-3xl shrink-0 gap-2 border-t border-border bg-background/95 p-4 backdrop-blur-sm">
         <Textarea
           placeholder={loaded ? `对 ${personaName} 说点什么…` : '…'}
           value={input}
