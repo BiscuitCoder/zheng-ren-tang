@@ -1,30 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import useSWRImmutable from 'swr/immutable'
 import type { PersonageConfig } from '@/types'
 
+async function fetchPersonages(url: string) {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(res.statusText || '加载失败')
+  return res.json() as Promise<PersonageConfig[]>
+}
+
 export function usePersonages() {
-  const [list, setList] = useState<PersonageConfig[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/personages')
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText || '加载失败')
-        return res.json() as Promise<PersonageConfig[]>
-      })
-      .then((data) => {
-        if (!cancelled) setList(data)
-      })
-      .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : '加载失败')
-      })
-    return () => {
-      cancelled = true
+  const { data, error, isLoading } = useSWRImmutable<PersonageConfig[]>(
+    '/api/personages',
+    fetchPersonages,
+    {
+      dedupingInterval: Infinity,
     }
-  }, [])
+  )
 
-  const loading = list === null && error === null
-  return { list, error, loading }
+  return {
+    list: data ?? null,
+    error: error ? (error instanceof Error ? error.message : '加载失败') : null,
+    loading: isLoading,
+  }
 }
