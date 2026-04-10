@@ -4,10 +4,10 @@ import { useState, useRef, useEffect } from 'react'
 import { MemorialPersonageAvatar } from '@/components/memorial-personage-avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings } from '@/hooks/use-settings'
+import { ChatMessageBubble } from '@/components/chat-message-bubble'
 import { MarkdownMessage } from '@/components/markdown-message'
 import { consumeSSEStream } from '@/lib/read-sse'
 import { personagesConfig } from '@/personages.config'
@@ -37,11 +37,16 @@ export function RoundtableView() {
     )
   }
 
-  const appendUserOpinion = () => {
+  const appendUserOpinion = async () => {
     const t = userNote.trim()
     if (!t || streaming) return
-    setHistory((h) => [...h, { speaker: USER_SPEAKER, content: t }])
+    const newHistory = [...history, { speaker: USER_SPEAKER, content: t }]
+    setHistory(newHistory)
     setUserNote('')
+
+    if (round >= MAX_ROUNDS) return
+    setRound((r) => r + 1)
+    await runRound(newHistory)
   }
 
   const runRound = async (currentHistory: RoundtableEntry[]) => {
@@ -121,8 +126,7 @@ export function RoundtableView() {
     await runRound(history)
   }
 
-  const reset = () => {
-    setStarted(false)
+  const clearChatLog = () => {
     setHistory([])
     setRound(0)
     setUserNote('')
@@ -193,82 +197,107 @@ export function RoundtableView() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/80 px-4 py-2.5 text-[0.94rem] text-muted-foreground backdrop-blur-sm">
-        <span className="truncate max-w-[min(100%,28rem)]">话题：{topic}</span>
-        <span aria-hidden>·</span>
-        <span>第 {round} 轮</span>
-        {round >= MAX_ROUNDS && (
-          <Badge variant="outline" className="text-xs font-normal">
-            讨论已较长，建议开启新话题以获得更好效果
-          </Badge>
-        )}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-background/80 px-4 py-2.5 text-[0.94rem] text-muted-foreground backdrop-blur-sm">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="truncate max-w-[min(100%,28rem)]">话题：{topic}</span>
+          <span aria-hidden>·</span>
+          <span>{round > 0 ? `第 ${round} 轮` : '尚未开始'}</span>
+          {round >= MAX_ROUNDS && (
+            <Badge variant="outline" className="text-xs font-normal">
+              讨论已较长，建议开启新话题以获得更好效果
+            </Badge>
+          )}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+          disabled={streaming || (history.length === 0 && round === 0)}
+          onClick={clearChatLog}
+        >
+          清空聊天记录
+        </Button>
       </div>
       <ScrollArea className="flex-1 min-h-0 px-4">
         <div className="py-4 space-y-4 max-w-3xl mx-auto">
           {history.map((entry, i) => {
             const isUser = entry.speaker === USER_SPEAKER
+            const entryPersona = !isUser
+              ? selected.find((p) => p.name === entry.speaker)
+              : undefined
             return (
-              <div
+              <ChatMessageBubble
                 key={`${entry.speaker}-${i}`}
-                className={`space-y-1.5 ${isUser ? 'flex flex-col items-end' : ''}`}
-              >
-                <div
-                  className={`text-xs font-medium ${isUser ? 'text-primary' : 'text-muted-foreground'}`}
-                >
-                  {entry.speaker}
-                </div>
-                <div
-                  className={`max-w-[min(100%,42rem)] rounded-lg px-4 py-3 ${
-                    isUser
-                      ? 'bg-primary text-primary-foreground shadow-[0_0_0_1px_rgba(201,100,66,0.35)]'
-                      : 'border border-border bg-card text-foreground shadow-[var(--shadow-whisper)]'
-                  }`}
-                >
-                  {entry.content ? (
-                    <MarkdownMessage
-                      content={entry.content}
-                      variant={isUser ? 'user' : 'assistant'}
+                name={entry.speaker}
+                isUser={isUser}
+                avatar={
+                  !isUser && entryPersona ? (
+                    <MemorialPersonageAvatar
+                      src={entryPersona.avatar}
+                      alt={entryPersona.name}
+                      born={entryPersona.born}
+                      died={entryPersona.died}
+                      className="h-full w-full rounded-full"
+                      imageClassName="object-cover"
+                      sizes="36px"
                     />
-                  ) : streaming && i === history.length - 1 ? (
-                    <span className="text-sm">▍</span>
-                  ) : null}
-                </div>
-              </div>
+                  ) : undefined
+                }
+              >
+                {entry.content ? (
+                  <MarkdownMessage
+                    content={entry.content}
+                    variant={isUser ? 'user' : 'assistant'}
+                  />
+                ) : streaming && i === history.length - 1 ? (
+                  <span className="text-sm">▍</span>
+                ) : null}
+              </ChatMessageBubble>
             )
           })}
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={streaming || round >= MAX_ROUNDS}
+              onClick={() => void handleNextRound()}
+            >
+              {streaming ? '讨论中…' : '你们再聊一轮'}
+            </Button>
+            {round >= MAX_ROUNDS && !streaming && (
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                已达轮次上限，可先清空聊天记录再聊
+              </p>
+            )}
+          </div>
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
-      <div className="mx-auto w-full max-w-3xl shrink-0 space-y-3 border-t border-border bg-background/95 p-4 backdrop-blur-sm">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Textarea
+      <div className="mx-auto w-full max-w-3xl shrink-0 space-y-3 bg-background/95 p-4 backdrop-blur-sm">
+        <div className="flex gap-2 items-center">
+          <Input
             placeholder="一轮结束后，可补充你的观点（可选）"
             value={userNote}
             onChange={(e) => setUserNote(e.target.value)}
-            rows={2}
             disabled={streaming}
-            className="min-h-[44px] resize-none flex-1"
+            className="min-w-0 flex-1 h-9"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                void appendUserOpinion()
+              }
+            }}
           />
           <Button
             type="button"
             variant="secondary"
-            className="sm:self-end shrink-0"
+            className="h-9 shrink-0 px-4"
             disabled={streaming || !userNote.trim()}
-            onClick={appendUserOpinion}
+            onClick={() => void appendUserOpinion()}
           >
             发表观点
-          </Button>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={reset} disabled={streaming}>
-            重新开始
-          </Button>
-          <Button
-            className="flex-1 min-w-[8rem]"
-            disabled={streaming || round >= MAX_ROUNDS}
-            onClick={() => void handleNextRound()}
-          >
-            {streaming ? '讨论中…' : '继续下一轮'}
           </Button>
         </div>
       </div>

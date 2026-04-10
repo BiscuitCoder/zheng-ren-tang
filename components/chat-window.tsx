@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings } from '@/hooks/use-settings'
+import { ChatMessageBubble } from '@/components/chat-message-bubble'
+import { MemorialPersonageAvatar } from '@/components/memorial-personage-avatar'
 import { MarkdownMessage } from '@/components/markdown-message'
 import { consumeSSEStream } from '@/lib/read-sse'
-import type { Message } from '@/types'
+import type { Message, PersonageConfig } from '@/types'
 
 interface ChatWindowProps {
-  slug: string
-  personaName: string
+  persona: PersonageConfig
 }
 
-export function ChatWindow({ slug, personaName }: ChatWindowProps) {
+export function ChatWindow({ persona }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
@@ -42,7 +43,7 @@ export function ChatWindow({ slug, personaName }: ChatWindowProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          slug,
+          slug: persona.slug,
           messages: next,
           apiKey: settings.apiKey,
           baseURL: settings.baseURL,
@@ -89,38 +90,44 @@ export function ChatWindow({ slug, personaName }: ChatWindowProps) {
           )}
           {loaded && messages.length === 0 && (
             <p className="text-center text-muted-foreground text-sm py-8">
-              开始和 {personaName} 对话吧
+              开始和 {persona.name} 对话吧
             </p>
           )}
           {messages.map((msg, i) => (
-            <div
+            <ChatMessageBubble
               key={i}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-lg px-4 py-2.5 ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground shadow-[0_0_0_1px_rgba(201,100,66,0.35)]'
-                    : 'border border-border bg-card text-foreground shadow-[var(--shadow-whisper)]'
-                }`}
-              >
-                {msg.content ? (
-                  <MarkdownMessage
-                    content={msg.content}
-                    variant={msg.role === 'user' ? 'user' : 'assistant'}
+              name={msg.role === 'user' ? '我' : persona.name}
+              isUser={msg.role === 'user'}
+              avatar={
+                msg.role === 'assistant' ? (
+                  <MemorialPersonageAvatar
+                    src={persona.avatar}
+                    alt={persona.name}
+                    born={persona.born}
+                    died={persona.died}
+                    className="h-full w-full rounded-full"
+                    imageClassName="object-cover"
+                    sizes="36px"
                   />
-                ) : streaming && i === messages.length - 1 && msg.role === 'assistant' ? (
-                  <span className="text-sm">▍</span>
-                ) : null}
-              </div>
-            </div>
+                ) : undefined
+              }
+            >
+              {msg.content ? (
+                <MarkdownMessage
+                  content={msg.content}
+                  variant={msg.role === 'user' ? 'user' : 'assistant'}
+                />
+              ) : streaming && i === messages.length - 1 && msg.role === 'assistant' ? (
+                <span className="text-sm">▍</span>
+              ) : null}
+            </ChatMessageBubble>
           ))}
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
-      <div className="mx-auto flex w-full max-w-3xl shrink-0 gap-2 border-t border-border bg-background/95 p-4 backdrop-blur-sm">
+      <div className="mx-auto flex w-full max-w-3xl shrink-0 gap-2 bg-background/95 p-4 backdrop-blur-sm">
         <Textarea
-          placeholder={loaded ? `对 ${personaName} 说点什么…` : '…'}
+          placeholder={loaded ? `对 ${persona.name} 说点什么…` : '…'}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {

@@ -38,7 +38,7 @@ export function SettingsModal() {
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="设置">
+        <Button variant="ghost" size="icon" aria-label="设置" className='cursor-pointer'>
           <Settings className="h-5 w-5" />
         </Button>
       </DialogTrigger>

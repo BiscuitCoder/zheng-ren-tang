@@ -11,8 +11,8 @@ interface PersonaCardProps {
 export function PersonaCard({ persona }: PersonaCardProps) {
   return (
     <Link href={`/chat/${persona.slug}`}>
-      <Card className="group h-full cursor-pointer transition-shadow hover:shadow-[var(--shadow-whisper)]">
-        <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
+      <Card className="p-4 group h-full cursor-pointer transition-shadow hover:shadow-[var(--shadow-whisper)]">
+        <CardContent className="flex flex-col gap-3 p-0">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
             <MemorialPersonageAvatar
               src={persona.avatar}
@@ -21,7 +21,7 @@ export function PersonaCard({ persona }: PersonaCardProps) {
               died={persona.died}
               className="h-full w-full rounded-lg"
               imageClassName="transition-transform duration-300 group-hover:scale-[1.02]"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              sizes="(max-width: 639px) 50vw, (max-width: 767px) 33vw, 25vw"
             />
           </div>
           <div>

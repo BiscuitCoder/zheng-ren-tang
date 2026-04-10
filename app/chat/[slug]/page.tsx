@@ -43,7 +43,7 @@ export default async function ChatPage({
         <SettingsModal />
       </header>
       <div className="flex-1 min-h-0 overflow-hidden">
-        <ChatWindow slug={persona.slug} personaName={persona.name} />
+        <ChatWindow persona={persona} />
       </div>
     </div>
   )

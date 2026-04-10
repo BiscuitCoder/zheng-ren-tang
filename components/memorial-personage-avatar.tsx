@@ -2,10 +2,11 @@
 
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { isDeceasedPersonage } from '@/types'
 
-const OFFERING_EMOJIS = ['🌸', '🌺', '🌼', '💐', '🌹', '✿'] as const
+const OFFERING_EMOJIS = ['🌸', '🌺', '🌼', '💐', '🌹'] as const
 
 type Particle = {
   id: number
@@ -40,6 +41,8 @@ export function MemorialPersonageAvatar({
   sizes,
   priority,
 }: MemorialPersonageAvatarProps) {
+  const pathname = usePathname()
+  const showFlowers = pathname === '/'
   const deceased = isDeceasedPersonage({ died })
   const [particles, setParticles] = useState<Particle[]>([])
 
@@ -78,26 +81,28 @@ export function MemorialPersonageAvatar({
           imageClassName
         )}
       />
-      <div
-        className="memorial-offering-root pointer-events-none absolute inset-0 z-[1] overflow-hidden rounded-[inherit]"
-        aria-hidden
-      >
-        {particles.map((p) => (
-          <span
-            key={p.id}
-            className="memorial-offering-particle absolute bottom-0 text-lg leading-none select-none"
-            style={{
-              left: `${p.leftPct}%`,
-              animationDelay: `${p.delay}ms`,
-              ['--memorial-drift' as string]: `${p.drift}px`,
-            }}
-            onAnimationEnd={() => removeParticle(p.id)}
-          >
-            {p.emoji}
-          </span>
-        ))}
-      </div>
-      {deceased && (
+      {showFlowers && (
+        <div
+          className="memorial-offering-root pointer-events-none absolute inset-0 z-[1] overflow-hidden rounded-[inherit]"
+          aria-hidden
+        >
+          {particles.map((p) => (
+            <span
+              key={p.id}
+              className="memorial-offering-particle absolute bottom-0 text-lg leading-none select-none"
+              style={{
+                left: `${p.leftPct}%`,
+                animationDelay: `${p.delay}ms`,
+                ['--memorial-drift' as string]: `${p.drift}px`,
+              }}
+              onAnimationEnd={() => removeParticle(p.id)}
+            >
+              {p.emoji}
+            </span>
+          ))}
+        </div>
+      )}
+      {deceased && showFlowers && (
         <button
           type="button"
           onClick={offerFlowers}

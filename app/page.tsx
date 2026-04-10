@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { PersonaCard } from '@/components/persona-card'
 import { PersonaCardSkeleton } from '@/components/persona-card-skeleton'
@@ -8,7 +9,9 @@ import { TagFilter } from '@/components/tag-filter'
 import { SettingsModal } from '@/components/settings-modal'
 import { Button } from '@/components/ui/button'
 import { usePersonages } from '@/hooks/use-personages'
+import { githubRepoUrl } from '@/lib/site'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Github } from 'lucide-react'
 
 const SKELETON_COUNT = 8
 
@@ -33,13 +36,33 @@ export default function Home() {
         <div className="container mx-auto max-w-[1200px] px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="shrink-0 text-xl font-semibold tracking-normal text-foreground"
+            className="shrink-0 flex items-center gap-2.5 text-xl font-semibold tracking-normal text-foreground"
           >
-            蒸人堂
+            <Image
+              src="/logo.png"
+              alt=""
+              width={500}
+              height={685}
+              className="h-8 w-auto object-contain"
+              sizes="32px"
+              priority
+            />
+            <span>蒸人堂</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
+            <Button size="sm" asChild>
               <Link href="/roundtable">圆桌讨论</Link>
+            </Button>
+            <Button variant="ghost" size="icon-sm" asChild>
+              <a
+                href={githubRepoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="GitHub 仓库"
+              >
+                <Github className="size-[1.125rem]" />
+                <span className="sr-only">GitHub 仓库</span>
+              </a>
             </Button>
             <SettingsModal />
           </div>
@@ -47,13 +70,10 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto max-w-[1200px] px-4 sm:px-6 py-10 sm:py-14 flex-1">
-        <div className="mb-10 max-w-2xl space-y-3">
+        <div className="mb-10 space-y-3">
           <h2 className="text-[1.6rem] font-semibold leading-[1.2] tracking-normal">
-            人物大厅
+            或许，我们已经迎来了另一种存在 ~
           </h2>
-          <p className="text-muted-foreground text-[1.06rem] leading-[1.6]">
-            浏览已蒸馏的人格，点选卡片进入单人对话；或使用圆桌让多位名人就同一话题各抒己见。
-          </p>
         </div>
 
         {error && (
@@ -79,7 +99,7 @@ export default function Home() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
               {loading
                 ? Array.from({ length: SKELETON_COUNT }).map((_, i) => (
                     <PersonaCardSkeleton key={i} />
