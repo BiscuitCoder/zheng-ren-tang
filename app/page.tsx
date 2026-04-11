@@ -11,9 +11,11 @@ import { Button } from '@/components/ui/button'
 import { usePersonages } from '@/hooks/use-personages'
 import { githubRepoUrl } from '@/lib/site'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Github } from 'lucide-react'
+import { ArrowUpRight, Github } from 'lucide-react'
 
 const SKELETON_COUNT = 8
+
+const NUWA_SKILL_REPO = 'https://github.com/alchaincyf/nuwa-skill'
 
 export default function Home() {
   const { list, error, loading } = usePersonages()
@@ -49,7 +51,7 @@ export default function Home() {
             />
             <span>蒸人堂</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-6">
             <Button size="sm" asChild>
               <Link href="/roundtable">圆桌讨论</Link>
             </Button>
@@ -74,6 +76,23 @@ export default function Home() {
           <h2 className="md:text-[1.6rem] font-semibold leading-[1.2] tracking-normal">
             或许，我们已经迎来了另一种存在 ~
           </h2>
+          <p className="text-[0.8125rem] leading-[1.65] text-muted-foreground sm:text-[0.875rem] sm:leading-[1.7]">
+            本项目通过{' '}
+            <a
+              href={NUWA_SKILL_REPO}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-primary underline decoration-primary/45 underline-offset-[3px] transition-colors hover:text-primary/85 hover:decoration-primary/70"
+            >
+              女娲 skill
+              <ArrowUpRight
+                className="size-[0.875em] shrink-0 translate-y-[0.04em] stroke-[2.25]"
+                aria-hidden
+              />
+            </a>
+            {' '}
+            蒸馏并呈现这些人物，你可与 Ta 单独对话，或多人组成圆桌讨论。或许在赛博世界里，你我都得到了永生 ~
+          </p>
         </div>
 
         {error && (
