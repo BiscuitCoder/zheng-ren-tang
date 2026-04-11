@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import md5 from 'md5'
+import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
@@ -9,34 +10,72 @@ import type { InviteRecord } from '@/lib/invite-server'
 
 const PWD_STORAGE_KEY = 'zhenrentang-admin-pwd'
 
+const INVITES_SWR_OPTIONS = {
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  dedupingInterval: 60_000,
+} as const
+
+async function fetchInviteCodes(
+  hash: string,
+  reloadFromRedis = false
+): Promise<InviteRecord[]> {
+  const q = reloadFromRedis ? '&reload=1' : ''
+  const res = await fetch(
+    `/api/admin/invites?pwd=${encodeURIComponent(hash)}${q}`
+  )
+  if (res.status === 401) {
+    const err = new Error('Unauthorized') as Error & { status: number }
+    err.status = 401
+    throw err
+  }
+  if (!res.ok) {
+    const err = new Error(`HTTP ${res.status}`) as Error & { status: number }
+    err.status = res.status
+    throw err
+  }
+  const data = (await res.json()) as { codes: InviteRecord[] }
+  return data.codes
+}
+
 export function AdminPanel() {
   const [pwd, setPwd] = useState('')
   const [md5Pwd, setMd5Pwd] = useState('')
   const [authed, setAuthed] = useState(false)
   const [pwdError, setPwdError] = useState('')
-  const [codes, setCodes] = useState<InviteRecord[]>([])
   const [label, setLabel] = useState('')
+  const [count, setCount] = useState(1)
+  const [limit, setLimit] = useState(6)
   const [generating, setGenerating] = useState(false)
-  const [newUrl, setNewUrl] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [redisRefreshing, setRedisRefreshing] = useState(false)
+  const [newItems, setNewItems] = useState<{ code: string; url: string }[]>([])
   const { toast } = useToast()
 
-  const fetchCodes = useCallback(async (hash: string) => {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/admin/invites?pwd=${encodeURIComponent(hash)}`)
-      if (!res.ok) return null
-      const data = (await res.json()) as { codes: InviteRecord[] }
-      setCodes(data.codes)
-      return true
-    } catch {
-      return null
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const invitesKey =
+    authed && md5Pwd ? (['admin-invites', md5Pwd] as const) : null
 
-  /** 只校验密码哈希，不拉 Redis 邀请列表（用于快速登录） */
+  const {
+    data: codes = [],
+    error: invitesError,
+    isLoading: invitesLoading,
+    isValidating: invitesValidating,
+    mutate: mutateInvites,
+  } = useSWR(
+    invitesKey,
+    ([, hash]) => fetchInviteCodes(hash, false),
+    {
+      ...INVITES_SWR_OPTIONS,
+      onError(err) {
+        const status = (err as Error & { status?: number }).status
+        if (status === 401) {
+          localStorage.removeItem(PWD_STORAGE_KEY)
+          setAuthed(false)
+          setMd5Pwd('')
+        }
+      },
+    }
+  )
+
   const verifyPasswordOnly = useCallback(async (hash: string) => {
     const res = await fetch(
       `/api/admin/invites?pwd=${encodeURIComponent(hash)}&verifyOnly=1`
@@ -44,7 +83,6 @@ export function AdminPanel() {
     return res.ok
   }, [])
 
-  // 尝试从 localStorage 自动恢复登录状态
   useEffect(() => {
     const stored = localStorage.getItem(PWD_STORAGE_KEY)
     if (!stored) return
@@ -56,9 +94,8 @@ export function AdminPanel() {
         return
       }
       setAuthed(true)
-      void fetchCodes(stored)
     })()
-  }, [fetchCodes, verifyPasswordOnly])
+  }, [verifyPasswordOnly])
 
   const handleLogin = async () => {
     if (!pwd.trim()) return
@@ -70,7 +107,6 @@ export function AdminPanel() {
       setPwdError('')
       localStorage.setItem(PWD_STORAGE_KEY, hash)
       toast({ title: '登录成功' })
-      void fetchCodes(hash)
     } else {
       setPwdError('密码错误')
       toast({ title: '密码错误', description: '请检查后重试', variant: 'destructive' })
@@ -79,20 +115,39 @@ export function AdminPanel() {
 
   const handleGenerate = async () => {
     setGenerating(true)
-    setNewUrl('')
+    setNewItems([])
     try {
       const res = await fetch('/api/admin/invites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pwd: md5Pwd, label: label.trim() }),
+        body: JSON.stringify({ pwd: md5Pwd, label: label.trim(), count, limit }),
       })
       if (!res.ok) return
-      const data = (await res.json()) as { url: string }
-      setNewUrl(data.url)
+      const data = (await res.json()) as { results: { code: string; url: string }[] }
+      setNewItems(data.results)
       setLabel('')
-      await fetchCodes(md5Pwd)
+      await mutateInvites()
+      toast({ title: '生成成功' })
     } finally {
       setGenerating(false)
+    }
+  }
+
+  const handleRefreshRedis = async () => {
+    if (!md5Pwd) return
+    setRedisRefreshing(true)
+    try {
+      const next = await fetchInviteCodes(md5Pwd, true)
+      await mutateInvites(next, { revalidate: false })
+      toast({ title: '已从 Redis 刷新缓存' })
+    } catch {
+      toast({
+        title: '刷新失败',
+        description: '请检查网络或 Redis 配置',
+        variant: 'destructive',
+      })
+    } finally {
+      setRedisRefreshing(false)
     }
   }
 
@@ -101,6 +156,14 @@ export function AdminPanel() {
       .then(() => toast({ title: '已复制到剪贴板' }))
       .catch(() => toast({ title: '复制失败', description: '请手动选择复制', variant: 'destructive' }))
   }
+
+  const copyAllUrls = () => {
+    const text = newItems.map((item) => item.url).join('\n')
+    copyToClipboard(text)
+  }
+
+  const listLoading = invitesLoading || invitesValidating || redisRefreshing
+  const showListError = invitesError && (invitesError as Error & { status?: number }).status !== 401
 
   if (!authed) {
     return (
@@ -140,43 +203,96 @@ export function AdminPanel() {
             onKeyDown={(e) => { if (e.key === 'Enter') void handleGenerate() }}
             className="flex-1"
           />
+          <Input
+            type="number"
+            min={1}
+            max={20}
+            value={count}
+            onChange={(e) => setCount(Math.min(20, Math.max(1, parseInt(e.target.value) || 1)))}
+            className="w-20 shrink-0"
+            title="生成数量"
+          />
+          <Input
+            type="number"
+            min={1}
+            max={100}
+            value={limit}
+            onChange={(e) => setLimit(Math.min(100, Math.max(1, parseInt(e.target.value) || 6)))}
+            className="w-20 shrink-0"
+            title="可用次数"
+          />
           <Button onClick={() => void handleGenerate()} disabled={generating} className="shrink-0">
             {generating ? '生成中…' : '生成'}
           </Button>
         </div>
-        {newUrl && (
-          <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
-            <span className="flex-1 truncate text-sm font-mono">{newUrl}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="shrink-0 text-xs"
-              onClick={() => copyToClipboard(newUrl)}
-            >
-              复制
-            </Button>
+
+        {/* 数量/次数说明 */}
+        <p className="text-xs text-muted-foreground">
+          数量 {count} 条 · 每条可用 {limit} 次
+        </p>
+
+        {/* 生成结果 */}
+        {newItems.length > 0 && (
+          <div className="space-y-1.5">
+            {newItems.length > 1 && (
+              <div className="flex justify-end">
+                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={copyAllUrls}>
+                  复制全部
+                </Button>
+              </div>
+            )}
+            {newItems.map((item) => (
+              <div key={item.code} className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+                <span className="flex-1 truncate text-sm font-mono">{item.url}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0 text-xs"
+                  onClick={() => copyToClipboard(item.url)}
+                >
+                  复制
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* 邀请码列表 */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="text-sm font-medium text-muted-foreground">
             邀请码列表（共 {codes.length} 条）
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-            disabled={loading}
-            onClick={() => void fetchCodes(md5Pwd)}
-          >
-            {loading ? '刷新中…' : '刷新'}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              disabled={listLoading}
+              onClick={() => void handleRefreshRedis()}
+            >
+              {redisRefreshing ? '同步中…' : '刷新 Redis'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              disabled={listLoading}
+              onClick={() => void mutateInvites()}
+            >
+              {invitesLoading || invitesValidating ? '刷新中…' : '刷新列表'}
+            </Button>
+          </div>
         </div>
 
-        {codes.length === 0 && !loading && (
+        {showListError && (
+          <p className="text-center text-sm text-destructive py-2">
+            加载失败，请稍后点击刷新重试
+          </p>
+        )}
+
+        {codes.length === 0 && !listLoading && !showListError && (
           <p className="text-center text-sm text-muted-foreground py-8">暂无邀请码</p>
         )}
 
