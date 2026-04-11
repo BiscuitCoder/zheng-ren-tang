@@ -74,7 +74,7 @@ export default function Home() {
       <main className="container mx-auto max-w-[1200px] px-4 sm:px-6 py-10 sm:py-14 flex-1">
         <div className="mb-10 space-y-3">
           <h2 className="md:text-[1.6rem] font-semibold leading-[1.2] tracking-normal">
-            或许，我们已经迎来了另一种存在 ~
+            赛博“蒸”人，群贤毕至 ~
           </h2>
           <p className="text-[0.8125rem] leading-[1.65] text-muted-foreground sm:text-[0.875rem] sm:leading-[1.7]">
             本项目通过{' '}
