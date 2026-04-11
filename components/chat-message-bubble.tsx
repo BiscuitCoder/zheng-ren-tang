@@ -32,6 +32,25 @@ function DefaultOtherAvatar({ label }: { label: string }) {
   )
 }
 
+/** 等待流式首字时的闪烁光标，缓解空白焦虑 */
+export function ChatTypingCursor({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn('inline-flex min-h-[1.25em] items-center', className)}
+      role="status"
+      aria-live="polite"
+    >
+      <span className="sr-only">正在输入</span>
+      <span
+        className="typing-cursor-blink text-[1.05em] font-light leading-none text-current select-none"
+        aria-hidden
+      >
+        ▍
+      </span>
+    </span>
+  )
+}
+
 /**
  * 聊天气泡：左侧/右侧对齐，统一展示头像 + 名称 + 内容区（直接对话、圆桌等复用）。
  */

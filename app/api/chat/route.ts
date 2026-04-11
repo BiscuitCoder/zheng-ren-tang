@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import OpenAI from 'openai'
 import { readSkillContent } from '@/lib/read-skill'
 import { resolveOpenAIConfig } from '@/lib/openai-config'
+import { checkAndIncrementInvite } from '@/lib/invite-server'
 import type { Message } from '@/types'
 
 export async function POST(req: NextRequest) {
@@ -11,6 +12,7 @@ export async function POST(req: NextRequest) {
     apiKey?: string
     baseURL?: string
     model?: string
+    inviteCode?: string
   }
   try {
     body = await req.json()
@@ -21,8 +23,28 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const { slug, messages } = body
+  const { slug, messages, inviteCode } = body
   const { apiKey, baseURL, model } = resolveOpenAIConfig(body)
+
+  // 无自己的 key 时，校验邀请码额度
+  const isUserKey = Boolean(body.apiKey?.trim())
+  let trialRemaining = 0
+  if (!isUserKey) {
+    if (!inviteCode) {
+      return new Response(JSON.stringify({ error: '请先在设置中配置 API Key，或通过邀请链接获取体验资格' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+    const trial = await checkAndIncrementInvite(inviteCode)
+    if (!trial.allowed) {
+      return new Response(JSON.stringify({ error: 'trial_exhausted' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'X-Trial-Remaining': '0' },
+      })
+    }
+    trialRemaining = trial.remaining
+  }
 
   if (!apiKey) {
     return new Response(JSON.stringify({ error: '请先在设置中配置 API Key，或在服务端设置 OPENAI_API_KEY' }), {
@@ -89,11 +111,12 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  return new Response(readable, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    },
-  })
+  const headers: Record<string, string> = {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  }
+  if (!isUserKey) headers['X-Trial-Remaining'] = String(trialRemaining)
+
+  return new Response(readable, { headers })
 }

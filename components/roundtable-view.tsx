@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings } from '@/hooks/use-settings'
+import { useTrial } from '@/hooks/use-trial'
+import { TrialBanner } from '@/components/trial-banner'
 import { ApiKeyConfigHint } from '@/components/api-key-config-hint'
-import { ChatMessageBubble } from '@/components/chat-message-bubble'
+import { ChatMessageBubble, ChatTypingCursor } from '@/components/chat-message-bubble'
 import { MarkdownMessage } from '@/components/markdown-message'
 import { consumeSSEStream } from '@/lib/read-sse'
 import { isLikelyApiCredentialsError } from '@/lib/api-credentials-error'
@@ -28,6 +30,7 @@ export function RoundtableView() {
   const [userNote, setUserNote] = useState('')
   const [showApiConfigHint, setShowApiConfigHint] = useState(false)
   const { settings, loaded } = useSettings()
+  const { inviteCode, remaining, hasOwnKey, initialized, isExhausted, syncFromResponse, optimisticDecrement } = useTrial()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -42,7 +45,8 @@ export function RoundtableView() {
 
   const appendUserOpinion = async () => {
     const t = userNote.trim()
-    if (!t || streaming) return
+    if (!t || streaming || isExhausted) return
+    if (!hasOwnKey) optimisticDecrement() // 用户发言 -1
     const newHistory = [...history, { speaker: USER_SPEAKER, content: t }]
     setHistory(newHistory)
     setUserNote('')
@@ -72,8 +76,17 @@ export function RoundtableView() {
           apiKey: settings.apiKey,
           baseURL: settings.baseURL,
           model: settings.model,
+          inviteCode,
         }),
       })
+
+      if (res.status === 429) {
+        syncFromResponse(res)
+        roundHistory[roundHistory.length - 1].content = '体验次数已用完，请配置 API Key 继续使用。'
+        setHistory([...roundHistory])
+        setStreaming(false)
+        return
+      }
 
       if (!res.ok) {
         let errMsg = res.statusText
@@ -102,6 +115,9 @@ export function RoundtableView() {
         setHistory([...roundHistory])
       })
 
+      syncFromResponse(res) // 以服务端权威值同步
+      if (!hasOwnKey) optimisticDecrement() // 每个 AI 角色回复完成 -1
+
       if (!result.ok) {
         setShowApiConfigHint(isLikelyApiCredentialsError(result.error))
         roundHistory[lastIdx] = {
@@ -120,7 +136,7 @@ export function RoundtableView() {
   }
 
   const handleStart = async () => {
-    if (selected.length < 2 || !topic.trim() || !loaded) return
+    if (selected.length < 2 || !topic.trim() || !loaded || isExhausted) return
     setShowApiConfigHint(false)
     setStarted(true)
     setHistory([])
@@ -143,6 +159,8 @@ export function RoundtableView() {
 
   if (!started) {
     return (
+      <div className="flex flex-col">
+      <TrialBanner inviteCode={inviteCode} remaining={remaining} hasOwnKey={hasOwnKey} initialized={initialized} />
       <div className="container mx-auto max-w-2xl space-y-8 px-4 py-10 sm:px-6">
         <div className="space-y-3">
           <h2 className="text-[1.25rem] font-semibold leading-[1.2] tracking-normal">
@@ -195,17 +213,19 @@ export function RoundtableView() {
         </div>
         <Button
           className="w-full"
-          disabled={selected.length < 2 || !topic.trim() || !loaded}
+          disabled={selected.length < 2 || !topic.trim() || !loaded || isExhausted}
           onClick={() => void handleStart()}
         >
           {loaded ? '开始讨论' : '加载中…'}
         </Button>
+      </div>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      <TrialBanner inviteCode={inviteCode} remaining={remaining} hasOwnKey={hasOwnKey} initialized={initialized} />
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-background/80 px-4 py-2.5 text-[0.94rem] text-muted-foreground backdrop-blur-sm">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <span className="truncate max-w-[min(100%,28rem)]">话题：{topic}</span>
@@ -260,7 +280,7 @@ export function RoundtableView() {
                     variant={isUser ? 'user' : 'assistant'}
                   />
                 ) : streaming && i === history.length - 1 ? (
-                  <span className="text-sm">▍</span>
+                  <ChatTypingCursor />
                 ) : null}
               </ChatMessageBubble>
             )
@@ -304,7 +324,7 @@ export function RoundtableView() {
             type="button"
             variant="secondary"
             className="h-9 shrink-0 px-4"
-            disabled={streaming || !userNote.trim()}
+            disabled={streaming || !userNote.trim() || isExhausted}
             onClick={() => void appendUserOpinion()}
           >
             发表观点

@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings } from '@/hooks/use-settings'
+import { useTrial } from '@/hooks/use-trial'
+import { TrialBanner } from '@/components/trial-banner'
 import { ApiKeyConfigHint } from '@/components/api-key-config-hint'
-import { ChatMessageBubble } from '@/components/chat-message-bubble'
+import { ChatMessageBubble, ChatTypingCursor } from '@/components/chat-message-bubble'
 import { MemorialPersonageAvatar } from '@/components/memorial-personage-avatar'
 import { MarkdownMessage } from '@/components/markdown-message'
 import { consumeSSEStream } from '@/lib/read-sse'
@@ -24,6 +26,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
   const [streaming, setStreaming] = useState(false)
   const [showApiConfigHint, setShowApiConfigHint] = useState(false)
   const { settings, loaded } = useSettings()
+  const { inviteCode, remaining, hasOwnKey, initialized, isExhausted, syncFromResponse, optimisticDecrement } = useTrial()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -32,12 +35,13 @@ export function ChatWindow({ persona }: ChatWindowProps) {
 
   const send = async () => {
     const text = input.trim()
-    if (!text || streaming || !loaded) return
+    if (!text || streaming || !loaded || isExhausted) return
 
     const next: Message[] = [...messages, { role: 'user', content: text }]
     setMessages(next)
     setInput('')
     setStreaming(true)
+    if (!hasOwnKey) optimisticDecrement() // 用户发送 -1
 
     setMessages([...next, { role: 'assistant', content: '' }])
 
@@ -51,8 +55,15 @@ export function ChatWindow({ persona }: ChatWindowProps) {
           apiKey: settings.apiKey,
           baseURL: settings.baseURL,
           model: settings.model,
+          inviteCode,
         }),
       })
+
+      if (res.status === 429) {
+        syncFromResponse(res)
+        setMessages([...next, { role: 'assistant', content: '体验次数已用完，请配置 API Key 继续使用。' }])
+        return
+      }
 
       if (!res.ok) {
         let errMsg = res.statusText
@@ -77,6 +88,9 @@ export function ChatWindow({ persona }: ChatWindowProps) {
         setMessages([...next, { role: 'assistant', content: accumulated }])
       })
 
+      syncFromResponse(res) // 以服务端权威值同步
+      if (!hasOwnKey) optimisticDecrement() // AI 回复完成 -1
+
       if (!result.ok) {
         setShowApiConfigHint(isLikelyApiCredentialsError(result.error))
         setMessages([...next, { role: 'assistant', content: `错误：${result.error}` }])
@@ -90,6 +104,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      <TrialBanner inviteCode={inviteCode} remaining={remaining} hasOwnKey={hasOwnKey} initialized={initialized} />
       <ScrollArea className="flex-1 min-h-0 px-4">
         <div className="py-4 space-y-4 max-w-3xl mx-auto">
           {!loaded && (
@@ -125,7 +140,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
                   variant={msg.role === 'user' ? 'user' : 'assistant'}
                 />
               ) : streaming && i === messages.length - 1 && msg.role === 'assistant' ? (
-                <span className="text-sm">▍</span>
+                <ChatTypingCursor />
               ) : null}
             </ChatMessageBubble>
           ))}
@@ -145,7 +160,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
               void send()
             }
           }}
-          disabled={streaming || !loaded}
+          disabled={streaming || !loaded || isExhausted}
           rows={2}
           className="min-h-[44px] resize-none"
         />
@@ -153,7 +168,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
           size="icon"
           className="shrink-0 h-11 w-11"
           onClick={() => void send()}
-          disabled={streaming || !loaded || !input.trim()}
+          disabled={streaming || !loaded || !input.trim() || isExhausted}
           aria-label="发送"
         >
           <Send className="h-4 w-4" />
