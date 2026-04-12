@@ -159,7 +159,7 @@ export function RoundtableView() {
 
   if (!started) {
     return (
-      <div className="flex flex-col">
+      <div className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-y-contain">
       <TrialBanner inviteCode={inviteCode} remaining={remaining} hasOwnKey={hasOwnKey} initialized={initialized} />
       <div className="container mx-auto max-w-2xl space-y-8 px-4 py-10 sm:px-6">
         <div className="space-y-3">
@@ -174,13 +174,13 @@ export function RoundtableView() {
                   key={p.slug}
                   type="button"
                   onClick={() => togglePersona(p)}
-                  className={`rounded-lg border p-3 text-left transition-colors ${
+                  className={`flex flex-row items-center gap-2.5 rounded-lg border p-2.5 text-left transition-colors sm:flex-col sm:items-stretch sm:gap-0 sm:p-3 ${
                     active
                       ? 'border-primary bg-primary/12 shadow-[0_0_0_1px_rgba(201,100,66,0.35)]'
                       : 'border-border bg-card hover:bg-accent'
                   }`}
                 >
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted mb-2">
+                  <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted sm:mb-2 sm:h-10 sm:w-10">
                     <MemorialPersonageAvatar
                       src={p.avatar}
                       alt={p.name}
@@ -191,8 +191,12 @@ export function RoundtableView() {
                       sizes="40px"
                     />
                   </div>
-                  <div className="font-medium text-sm">{p.name}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2">{p.description}</div>
+                  <div className="min-w-0 flex-1 sm:flex-none">
+                    <div className="font-medium text-[0.8125rem] leading-snug sm:text-sm">{p.name}</div>
+                    <div className="hidden text-[0.6875rem] leading-snug text-muted-foreground line-clamp-2 sm:block">
+                      {p.description}
+                    </div>
+                  </div>
                 </button>
               )
             })}
