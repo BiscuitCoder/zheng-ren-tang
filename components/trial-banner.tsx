@@ -5,13 +5,12 @@ import { requestOpenSettings } from '@/lib/open-settings'
 interface TrialBannerProps {
   inviteCode: string
   remaining: number
+  total: number
   hasOwnKey: boolean
   initialized: boolean
 }
 
-const TOTAL = 6
-
-export function TrialBanner({ inviteCode, remaining, hasOwnKey, initialized }: TrialBannerProps) {
+export function TrialBanner({ inviteCode, remaining, total, hasOwnKey, initialized }: TrialBannerProps) {
   if (hasOwnKey || !initialized) return null
 
   // 无邀请码也无 key
@@ -46,7 +45,7 @@ export function TrialBanner({ inviteCode, remaining, hasOwnKey, initialized }: T
   }
 
   // 有余量
-  const pct = Math.round((remaining / TOTAL) * 100)
+  const pct = Math.round((remaining / Math.max(1, total)) * 100)
   return (
     <div className="shrink-0 border-b border-border bg-muted/40 px-4 py-1.5">
       <div className="mx-auto flex max-w-3xl items-center gap-3">

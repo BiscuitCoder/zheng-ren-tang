@@ -26,7 +26,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
   const [streaming, setStreaming] = useState(false)
   const [showApiConfigHint, setShowApiConfigHint] = useState(false)
   const { settings, loaded } = useSettings()
-  const { inviteCode, remaining, hasOwnKey, initialized, isExhausted, syncFromResponse, optimisticDecrement } = useTrial()
+  const { inviteCode, remaining, total, hasOwnKey, initialized, isExhausted, syncFromResponse, optimisticDecrement } = useTrial()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -89,7 +89,6 @@ export function ChatWindow({ persona }: ChatWindowProps) {
       })
 
       syncFromResponse(res) // 以服务端权威值同步
-      if (!hasOwnKey) optimisticDecrement() // AI 回复完成 -1
 
       if (!result.ok) {
         setShowApiConfigHint(isLikelyApiCredentialsError(result.error))
@@ -104,7 +103,7 @@ export function ChatWindow({ persona }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <TrialBanner inviteCode={inviteCode} remaining={remaining} hasOwnKey={hasOwnKey} initialized={initialized} />
+      <TrialBanner inviteCode={inviteCode} remaining={remaining} total={total} hasOwnKey={hasOwnKey} initialized={initialized} />
       <ScrollArea className="flex-1 min-h-0 px-4">
         <div className="py-4 space-y-4 max-w-3xl mx-auto">
           {!loaded && (

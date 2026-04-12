@@ -101,29 +101,29 @@ export async function listInviteCodes(): Promise<InviteRecord[]> {
   })
 }
 
-export async function validateInviteCode(code: string): Promise<{ valid: boolean; remaining: number }> {
-  if (!code) return { valid: false, remaining: 0 }
+export async function validateInviteCode(code: string): Promise<{ valid: boolean; remaining: number; limit: number }> {
+  if (!code) return { valid: false, remaining: 0, limit: 0 }
   await ensureLoaded()
   const entry = _cache.get(code)
-  if (!entry) return { valid: false, remaining: 0 }
+  if (!entry) return { valid: false, remaining: 0, limit: 0 }
   const remaining = Math.max(0, entry.limit - entry.used)
-  return { valid: remaining > 0, remaining }
+  return { valid: remaining > 0, remaining, limit: entry.limit }
 }
 
 export async function checkAndIncrementInvite(
   code: string
-): Promise<{ allowed: boolean; remaining: number }> {
-  if (!code) return { allowed: false, remaining: 0 }
+): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+  if (!code) return { allowed: false, remaining: 0, limit: 0 }
   await ensureLoaded()
 
   const entry = _cache.get(code)
-  if (!entry) return { allowed: false, remaining: 0 }
-  if (entry.used >= entry.limit) return { allowed: false, remaining: 0 }
+  if (!entry) return { allowed: false, remaining: 0, limit: 0 }
+  if (entry.used >= entry.limit) return { allowed: false, remaining: 0, limit: entry.limit }
 
   // 内存中先累减，立即返回；异步写回 Redis 不阻塞响应
   entry.used++
   const remaining = Math.max(0, entry.limit - entry.used)
   void getRedis().hincrby(`invite:${code}`, 'used', 1).catch(console.error)
 
-  return { allowed: true, remaining }
+  return { allowed: true, remaining, limit: entry.limit }
 }

@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
   // 无自己的 key 时，校验邀请码额度
   const isUserKey = Boolean(body.apiKey?.trim())
   let trialRemaining = 0
+  let trialTotal = 0
   if (!isUserKey) {
     if (!inviteCode) {
       return new Response(JSON.stringify({ error: '请先在设置中配置 API Key，或通过邀请链接获取体验资格' }), {
@@ -40,10 +41,11 @@ export async function POST(req: NextRequest) {
     if (!trial.allowed) {
       return new Response(JSON.stringify({ error: 'trial_exhausted' }), {
         status: 429,
-        headers: { 'Content-Type': 'application/json', 'X-Trial-Remaining': '0' },
+        headers: { 'Content-Type': 'application/json', 'X-Trial-Remaining': '0', 'X-Trial-Total': String(trial.limit) },
       })
     }
     trialRemaining = trial.remaining
+    trialTotal = trial.limit
   }
 
   if (!apiKey) {
@@ -116,7 +118,10 @@ export async function POST(req: NextRequest) {
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
   }
-  if (!isUserKey) headers['X-Trial-Remaining'] = String(trialRemaining)
+  if (!isUserKey) {
+    headers['X-Trial-Remaining'] = String(trialRemaining)
+    headers['X-Trial-Total'] = String(trialTotal)
+  }
 
   return new Response(readable, { headers })
 }
