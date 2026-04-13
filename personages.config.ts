@@ -12,6 +12,17 @@ export const personagesConfig: PersonageConfig[] = [
     died: '2011-10',
   },
   {
+    slug: 'jiajing',
+    dir: 'jiajing-perspective-skill',
+    name: '1566 嘉靖',
+    description:
+      '《大明王朝1566》中的嘉靖视角：权力结构、组织博弈与决策困境；基于刘和平原著剧本提炼的思维框架（艺术形象，非历史定论）',
+    avatar: '/avatars/jiajing.png',
+    tags: ['历史', '权谋', '影视'],
+    born: '1507-09',
+    died: '1567-01',
+  },
+  {
     slug: 'feynman',
     dir: 'feynman-skill',
     name: 'Richard Feynman（理查德·费曼）',
